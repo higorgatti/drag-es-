@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1,user-scalable=no"><title>Reinos de Fogo</title>
 <style>body{margin:0;background:#13152f;color:white;font:16px system-ui;overflow:hidden;touch-action:none}canvas{display:block;width:100vw;height:100dvh;touch-action:none}#hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;font-weight:700;text-shadow:1px 2px #000}#panel{position:fixed;inset:0;display:grid;place-items:center;background:#0c1022cc;text-align:center}#box{max-width:320px;margin:18px;background:#252447;border:2px solid #ffc16a;border-radius:22px;padding:26px}button{background:#ffbb65;border:0;border-radius:12px;font-size:18px;font-weight:bold;padding:14px 25px}h1{color:#ffc16a}</style>
-<canvas id="game"></canvas><div id="hud"><span id="life">❤️ 5</span><span id="level">✨ 1</span><span id="points">💎 0</span></div><div id="panel"><div id="box"><h1 id="heading">🐉 REINOS DE FOGO</h1><p id="description">Arraste para mover seu dragão. Destrua monstros, colete cristais e derrote o Guardião das Cinzas!</p><button id="start">JOGAR</button></div></div>
+<canvas id="game"></canvas><div id="hud"><span id="life">❤️ 5</span><span id="level">✨ 1</span><span id="points">💎 0</span></div><div id="panel"><div id="box"><h1 id="heading">🐉 REINOS DE FOGO</h1><p id="description">Arraste para mover seu dragão. Destrua monstros, colete cristais e derrote o Guardião das Cinzas!</p><button id="start" type="button" onclick="window.startDragonGame()">JOGAR</button></div></div>
 <script>
 const c=document.querySelector('#game'),g=c.getContext('2d'),panel=document.querySelector('#panel');let w,h,p,foes,fire,gems,boss,life,points,level,t,spawn,shoot,playing=false,previous=0;
 function resize(){w=c.width=innerWidth;h=c.height=innerHeight}resize();onresize=resize;
-function begin(){p={x:w/2,y:h*.8,r:21};foes=[];fire=[];gems=[];boss=null;life=5;points=0;level=1;t=0;spawn=0;shoot=0;playing=true;panel.style.display='none'}document.querySelector('#start').onclick=begin;
+function begin(){p={x:w/2,y:h*.8,r:21};foes=[];fire=[];gems=[];boss=null;life=5;points=0;level=1;t=0;spawn=0;shoot=0;playing=true;panel.style.display='none'}window.startDragonGame=begin;document.querySelector('#start').addEventListener('click',begin);
 function end(win){playing=false;panel.style.display='grid';document.querySelector('#heading').textContent=win?'🏆 REINO SALVO!':'💔 FIM DE JOGO';document.querySelector('#description').textContent='Você coletou '+points+' cristais. Quer jogar novamente?';document.querySelector('#start').textContent='RECOMEÇAR'}
 function dot(x,y,r,color){g.fillStyle=color;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill()}
 function move(e){if(!playing)return;p.x=Math.min(w-22,Math.max(22,e.clientX));p.y=Math.min(h-35,Math.max(h*.24,e.clientY))}
@@ -25,5 +25,5 @@ for(const e of foes){dot(e.x,e.y,e.r,'#a466c6');dot(e.x-5,e.y-3,3,'#fff29a');dot
 if(boss){dot(boss.x,boss.y,45,'#af4d46');dot(boss.x-14,boss.y-7,7,'#ffca59');dot(boss.x+14,boss.y-7,7,'#ffca59');g.fillStyle='#ff954a';g.fillRect(25,58,(w-50)*boss.hp/65,10)}
 for(const f of fire){dot(f.x,f.y,f.r+4,'#ea6928');dot(f.x,f.y,f.r,'#ffe9a2')}
 if(p){g.fillStyle='#cc4c2d';g.beginPath();g.moveTo(p.x,p.y);g.lineTo(p.x-43,p.y-23);g.lineTo(p.x-35,p.y+22);g.lineTo(p.x,p.y+8);g.lineTo(p.x+35,p.y+22);g.lineTo(p.x+43,p.y-23);g.fill();dot(p.x,p.y,18,'#f5a843');dot(p.x-7,p.y-7,3,'white');dot(p.x+7,p.y-7,3,'white')}}
-function frame(ms){let dt=Math.min(.04,(ms-previous)/1000||0);previous=ms;step(dt);draw();requestAnimationFrame(frame)}requestAnimationFrame(frame);
+function frame(ms){let dt=Math.min(.04,(ms-previous)/1000||0);previous=ms;try{step(dt);draw()}catch(err){playing=false;panel.style.display='grid';document.querySelector('#heading').textContent='ERRO NO JOGO';document.querySelector('#description').textContent=String(err.message||err)}requestAnimationFrame(frame)}requestAnimationFrame(frame);
 </script>
