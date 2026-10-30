@@ -65,5 +65,21 @@
     shade.addColorStop(0,"#1524354d");shade.addColorStop(.25,"#00000000");shade.addColorStop(1,"#15132b3b");
     ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
   }
-  window.WorldMap=Object.freeze({draw,zoneAt:()=> "Vale Esmeralda"});
+  // RF-0004: imagem aprovada; o fallback procedural permanece ate o asset estar disponivel.
+  const art = new Image();
+  let ready = false;
+  art.onload = () => { ready = art.naturalWidth > 0; };
+  art.onerror = () => { ready = false; };
+  art.src = "./assets/maps/vale-esmeralda-fase1.webp?v=rf0004";
+  function drawStage(ctx,w,h,time) {
+    if (!ready) { draw(ctx,w,h,time); return; }
+    const scale = w / art.naturalWidth;
+    const tileHeight = art.naturalHeight * scale;
+    const distance = Math.max(0,time) * 43;
+    const shift = distance % tileHeight;
+    for(let y = shift - tileHeight; y < h; y += tileHeight) {
+      ctx.drawImage(art, 0, y, w, tileHeight + 0.6);
+    }
+  }
+  window.WorldMap=Object.freeze({draw:drawStage,zoneAt:()=> "Vale Esmeralda",artLoaded:()=>ready});
 })();
