@@ -1,24 +1,69 @@
-/* RF-0002: mapa vertical decorativo. Sem colisao: preserva combate existente. */
-(function(){
-"use strict";
-const zoneNames=["Vale Esmeralda","Trilha das Ruinas","Terras de Cinza","Fortaleza do Guardiao"];
-const zoneColors=[["#2d6749","#377957","#8dc28c"],["#55734e","#8a785a","#c2aa77"],["#60484a","#795449","#e18b58"],["#392d45","#5c3845","#e69d63"]];
-function hash(i){let n=Math.sin(i*127.1+24.7)*43758.5453;return n-Math.floor(n)}
-function disk(ctx,x,y,r,color){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()}
-function polygon(ctx,points,color){ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.closePath();ctx.fill()}
-function tree(ctx,x,y,s){disk(ctx,x,y+5*s,8*s,"#1e3831");disk(ctx,x,y-3*s,12*s,"#225840");disk(ctx,x-5*s,y-7*s,7*s,"#44875a");disk(ctx,x+5*s,y-9*s,6*s,"#4e9c62")}
-function ruin(ctx,x,y,s){ctx.save();ctx.translate(x,y);ctx.rotate(-.1);ctx.fillStyle="#392f36";ctx.fillRect(-13*s,-6*s,27*s,20*s);ctx.fillStyle="#afa495";ctx.fillRect(-12*s,-12*s,24*s,18*s);ctx.fillStyle="#716d6b";ctx.fillRect(-7*s,-8*s,5*s,12*s);ctx.fillRect(4*s,-8*s,5*s,12*s);ctx.restore()}
-function lava(ctx,x,y,s){disk(ctx,x,y,16*s,"#552e37");disk(ctx,x,y,11*s,"#e56231");disk(ctx,x,y,5*s,"#ffb14c")}
-function tower(ctx,x,y,s){ctx.fillStyle="#332b3b";ctx.fillRect(x-16*s,y-24*s,32*s,46*s);ctx.fillStyle="#897080";ctx.fillRect(x-13*s,y-26*s,26*s,35*s);for(let a=-1;a<=1;a++)ctx.fillRect(x+a*12*s-5*s,y-32*s,9*s,11*s);disk(ctx,x,y-11*s,3*s,"#f6aa5b")}
-function render(ctx,w,h,time){const z=Math.min(3,Math.floor(Math.max(0,time)/25));const colors=zoneColors[z];const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,colors[0]);bg.addColorStop(1,colors[1]);ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
-const tile=130,offset=(Math.max(0,time)*42)%tile;
-for(let row=-1;row<=Math.ceil(h/tile);row++){const index=Math.floor(Math.max(0,time)*42/tile)+row;const y=row*tile+offset;const sway=Math.sin(index*.71)*w*.085;const center=w*.5+sway;ctx.fillStyle=z<2?"#b5a47a66":"#2b273e99";ctx.beginPath();ctx.moveTo(center-w*.24,y-5);ctx.lineTo(center+w*.26,y-5);ctx.lineTo(center+w*.19,y+tile+6);ctx.lineTo(center-w*.25,y+tile+6);ctx.fill();
-for(let side=0;side<2;side++){const x=side===0?12+hash(index*3)*Math.max(12,w*.2):w-12-hash(index*3+1)*Math.max(12,w*.2);const yy=y+25+hash(index*8+side)*75;const scale=.75+hash(index*11+side)*.65;
-if(z===0)tree(ctx,x,yy,scale);else if(z===1)ruin(ctx,x,yy,scale);else if(z===2)lava(ctx,x,yy,scale);else tower(ctx,x,yy,scale*.7)}
-for(let k=0;k<4;k++){const x=hash(index*19+k)*w;const sy=y+hash(index*29+k)*tile;disk(ctx,x,sy,1+hash(index+k)*2,z<2?"#d6f3b333":"#ffb78d44")}
-}
-if(z===3){ctx.fillStyle="#a26e5744";ctx.fillRect(0,0,14,h);ctx.fillRect(w-14,0,14,h)}
-ctx.fillStyle="#ffffffaa";ctx.font="700 12px system-ui";ctx.textAlign="center";ctx.fillText(zoneNames[z],w/2,Math.max(75,Math.min(h*.17,135)));
-}
-window.WorldMap=Object.freeze({draw:render,zoneAt:(t)=>zoneNames[Math.min(3,Math.floor(Math.max(0,t)/25))]});
+/* RF-0003 - Vale Esmeralda, fundo da primeira fase. Somente desenho, sem colisoes. */
+(function () {
+  "use strict";
+  const CHUNK = 240;
+  const COLORS = { grass: "#40784b", grassLight: "#5e995a", trail: "#bba16c", border: "#a18b61", stone: "#aaa998", dark: "#314d3b" };
+  const fract = n => n - Math.floor(n);
+  const noise = n => fract(Math.sin(n * 127.1 + 31.7) * 43758.5453);
+  function circle(ctx,x,y,r,color) {
+    ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+  function poly(ctx,pts,color) {
+    ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);
+    ctx.closePath();ctx.fill();
+  }
+  function tree(ctx,x,y,s) {
+    circle(ctx,x+2*s,y+8*s,16*s,"#294a35");
+    circle(ctx,x,y,16*s,"#39714a");
+    circle(ctx,x-6*s,y-6*s,11*s,"#52955c");
+    circle(ctx,x+7*s,y-9*s,9*s,"#67a968");
+  }
+  function rock(ctx,x,y,s) {
+    poly(ctx,[[x-13*s,y+8*s],[x-11*s,y-5*s],[x+2*s,y-12*s],[x+15*s,y-2*s],[x+11*s,y+10*s]],"#737f77");
+    poly(ctx,[[x-11*s,y-5*s],[x+2*s,y-12*s],[x+5*s,y+1*s],[x-8*s,y+5*s]],"#b4b9a4");
+  }
+  function ruins(ctx,x,y,s) {
+    circle(ctx,x,y+8*s,23*s,"#415943");
+    ctx.fillStyle="#727c70";ctx.fillRect(x-17*s,y-8*s,34*s,21*s);
+    ctx.fillStyle="#b8b4a0";ctx.fillRect(x-15*s,y-15*s,10*s,23*s);ctx.fillRect(x+6*s,y-10*s,9*s,20*s);
+    ctx.fillStyle="#d4cbb0";ctx.fillRect(x-18*s,y-17*s,15*s,5*s);
+    rock(ctx,x+17*s,y+15*s,.55*s);
+  }
+  function draw(ctx,w,h,time) {
+    const offset=time*43, scroll=offset%CHUNK;
+    const grd=ctx.createLinearGradient(0,0,w,h);
+    grd.addColorStop(0,"#427950");grd.addColorStop(.48,"#5c955a");grd.addColorStop(1,"#396e4c");
+    ctx.fillStyle=grd;ctx.fillRect(0,0,w,h);
+    const count=Math.ceil(h/CHUNK)+2;
+    for(let row=-1;row<count;row++) {
+      const id=Math.floor(offset/CHUNK)+row,y=row*CHUNK+scroll;
+      for(let j=0;j<13;j++) {
+        const px=noise(id*71+j*3)*w,py=y+noise(id*39+j*7)*CHUNK;
+        circle(ctx,px,py,5+noise(id*43+j)*20,noise(id+j)>.5?"#619b5b4d":"#2d694c44");
+      }
+      const cx=w*.5+Math.sin(id*.48)*w*.06;
+      const wide=Math.min(w*.47,180);
+      poly(ctx,[[cx-wide*.53,y-1],[cx+wide*.46,y-1],[cx+wide*.58,y+CHUNK+1],[cx-wide*.42,y+CHUNK+1]],COLORS.border);
+      poly(ctx,[[cx-wide*.46,y-1],[cx+wide*.40,y-1],[cx+wide*.51,y+CHUNK+1],[cx-wide*.34,y+CHUNK+1]],COLORS.trail);
+      for(let j=0;j<9;j++){
+        const px=noise(id*23+j*11)*w,py=y+noise(id*51+j*13)*CHUNK;
+        if(Math.abs(px-cx)<wide*.62+17)continue;
+        const s=.55+noise(id*73+j*3)*.58;
+        if(j===5&&id%3===1)ruins(ctx,px,py,s);
+        else if(j%4===0)rock(ctx,px,py,s);
+        else tree(ctx,px,py,s);
+      }
+      for(let j=0;j<10;j++){
+        const px=noise(id*101+j*13)*w,py=y+noise(id*93+j*17)*CHUNK;
+        if(Math.abs(px-cx)<wide*.57)continue;
+        circle(ctx,px,py,2,noise(id*11+j)>.5?"#f4cf82":"#d9b2db");
+      }
+    }
+    // Leve vinheta para destacar os tiros e o personagem.
+    const shade=ctx.createLinearGradient(0,0,0,h);
+    shade.addColorStop(0,"#1524354d");shade.addColorStop(.25,"#00000000");shade.addColorStop(1,"#15132b3b");
+    ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
+  }
+  window.WorldMap=Object.freeze({draw,zoneAt:()=> "Vale Esmeralda"});
 })();
