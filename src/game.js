@@ -14,7 +14,7 @@ for(const e of foes){for(const f of fire){if(Math.hypot(e.x-f.x,e.y-f.y)<e.r+f.r
 if(boss){boss.x=w/2+Math.sin(t*2)*w*.29;for(const f of fire){if(Math.hypot(boss.x-f.x,boss.y-f.y)<boss.r+f.r){f.dead=true;boss.hp--;if(boss.hp<=0){boss=null;end(true);break}}}}
 for(const v of gems){let dx=p.x-v.x,dy=p.y-v.y,d=Math.hypot(dx,dy);if(d<125){v.x+=dx*dt*6;v.y+=dy*dt*6}if(d<27){v.dead=true;points+=10;level=1+Math.floor(points/100)}}
 foes=foes.filter(e=>!e.dead&&e.y<h+25);fire=fire.filter(f=>!f.dead&&f.y>-20);gems=gems.filter(v=>!v.dead);document.querySelector('#life').textContent='❤️ '+life;document.querySelector('#level').textContent='✨ '+level;document.querySelector('#points').textContent='💎 '+points}
-function draw(){let bg=g.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#142343');bg.addColorStop(1,'#4d3044');g.fillStyle=bg;g.fillRect(0,0,w,h);
+function draw(){window.WorldMap.draw(g,w,h,t);
 for(let i=0;i<15;i++){let y=(i*95+t*40)%h;dot((i*113)%w,y,2,'#c3dafa55')}
 for(const v of gems){dot(v.x,v.y,11,'#71ecff');dot(v.x,v.y,5,'white')}
 for(const e of foes){dot(e.x,e.y,e.r,'#a466c6');dot(e.x-5,e.y-3,3,'#fff29a');dot(e.x+5,e.y-3,3,'#fff29a')}
